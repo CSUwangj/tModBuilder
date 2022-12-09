@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="FNA\**" />
+    <EmbeddedResource Remove="FNA\**" />
+    <None Remove="FNA\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Basic.Reference.Assemblies.Net60" Version="1.2.4" />
+    <PackageReference Include="log4net" Version="2.0.15" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="4.4.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.4.0" />
+    <PackageReference Include="System.CodeDom" Version="7.0.0" />
+    <PackageReference Include="System.Reflection.MetadataLoadContext" Version="7.0.0" />
+    <PackageReference Include="tModLoader.CodeAssist" Version="0.1.5" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="FNA\FNA.Core.csproj" />
+  </ItemGroup>
+
+</Project>
