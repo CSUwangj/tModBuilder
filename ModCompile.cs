@@ -35,25 +35,12 @@ namespace tModBuilder
       }
     }
 
-    public static readonly string ModSourcePath = Path.Combine(Program.SavePathShared, "ModSources");
-
-    internal static string[] FindModSources() {
-      Directory.CreateDirectory(ModSourcePath);
-      return Directory.GetDirectories(ModSourcePath, "*", SearchOption.TopDirectoryOnly).Where(dir => {
-        var directory = new DirectoryInfo(dir);
-        return directory.Name[0] != '.' && directory.Name != "ModAssemblies" && directory.Name != "Mod Libraries";
-      }).ToArray();
-    }
-
     // Silence exception reporting in the chat unless actively modding.
     public static bool activelyModding;
 
-    public static bool DeveloperMode => Debugger.IsAttached || Directory.Exists(ModSourcePath) && FindModSources().Length > 0;
-
-    private static readonly string tMLDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
     // private static readonly string oldModReferencesPath = Path.Combine(Program.SavePath, "references");
-    private static readonly string modTargetsPath = Path.Combine(ModSourcePath, "tModLoader.targets");
-    private static readonly string tMLModTargetsPath = Path.Combine(tMLDir, "tMLMod.targets");
+    private static readonly string modTargetsPath = Path.GetFullPath(".\\tModLoader.targets");
+    private static readonly string tMLModTargetsPath = Path.GetFullPath(".\\tMLMod.targets");
     private static bool referencesUpdated = false;
     internal static void UpdateReferencesFolder() {
       if(referencesUpdated) {
@@ -203,40 +190,6 @@ $@"<Project ToolsVersion=""14.0"" xmlns=""http://schemas.microsoft.com/developer
       }
     }
 
-    private List<LocalMod> FindReferencedMods(BuildProperties properties) {
-      //Determine the existing mods here, then just keep passing around the collection
-      // @FIXME
-      //var existingMods = ModOrganizer.FindMods().ToDictionary(mod => mod.modFile.Name, mod => mod);
-      //
-      var mods = new Dictionary<string, LocalMod>();
-      //FindReferencedMods(properties, existingMods, mods, true);
-      return mods.Values.ToList();
-    }
-
-    private void FindReferencedMods(BuildProperties properties, Dictionary<string, LocalMod> existingMods, Dictionary<string, LocalMod> mods, bool requireWeak) {
-      foreach(var refName in properties.RefNames(true)) {
-        if(mods.ContainsKey(refName)) {
-          continue;
-        }
-
-        bool isWeak = properties.weakReferences.Any(r => r.mod == refName);
-        LocalMod mod;
-        try {
-          //If the file doesn't exist here, bail out immediately
-          if(!existingMods.TryGetValue(refName, out mod)) {
-            throw new FileNotFoundException($"Could not find \"{refName}.tmod\" in your subscribed Workshop mods nor the Mods folder");
-          }
-        } catch(FileNotFoundException) when(isWeak && !requireWeak) {
-          // don't recursively require weak deps, if the mod author needs to compile against them, they'll have them installed
-          continue;
-        } catch(Exception ex) {
-          throw new BuildException("BuildErrorModReference" + refName, ex);
-        }
-        mods[refName] = mod;
-        FindReferencedMods(mod.properties, existingMods, mods, false);
-      }
-    }
-
     private void BuildMod(BuildingMod mod, out byte[] code, out byte[] pdb) {
       string dllName = mod.Name + ".dll";
       string dllPath = null;
@@ -272,21 +225,6 @@ $@"<Project ToolsVersion=""14.0"" xmlns=""http://schemas.microsoft.com/developer
 
       //libs added by the mod
       refs.AddRange(mod.properties.dllReferences.Select(dllName => DllRefPath(mod, dllName)));
-
-      //all dlls included in all referenced mods
-      foreach(var refMod in FindReferencedMods(mod.properties)) {
-        using(refMod.modFile.Open()) {
-          var path = Path.Combine(tempDir, refMod + ".dll");
-          File.WriteAllBytes(path, refMod.modFile.GetModAssembly());
-          refs.Add(path);
-
-          foreach(var refDll in refMod.properties.dllReferences) {
-            path = Path.Combine(tempDir, refDll + ".dll");
-            File.WriteAllBytes(path, refMod.modFile.GetBytes("lib/" + refDll + ".dll"));
-            refs.Add(path);
-          }
-        }
-      }
 
       var files = Directory.GetFiles(mod.path, "*.cs", SearchOption.AllDirectories).Where(file => !IgnoreCompletely(mod, file)).ToArray();
 
@@ -330,7 +268,7 @@ $@"<Project ToolsVersion=""14.0"" xmlns=""http://schemas.microsoft.com/developer
     }
 
     private static IEnumerable<string> GetTerrariaReferences() {
-      var executingAssembly = Assembly.GetExecutingAssembly();
+      var executingAssembly = Assembly.LoadFile("A:\\SteamLibrary\\steamapps\\common\\tModLoader\\tModLoader.dll");
       yield return executingAssembly.Location;
 
       // same filters as the <Reference> elements in the generated .targets file

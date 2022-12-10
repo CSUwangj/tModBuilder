@@ -9,7 +9,7 @@ namespace tModBuilder
       Stable // The 'stable' builds from CI that players are expected to play on. 
     }
 
-    public static readonly string BuildIdentifier = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
+    public static readonly string BuildIdentifier = "1.4.3.6+2022.09.47.15|1.4|1.4-stable|Stable|5192bce81f9762d62c6b154ea3c1514ab73f3d78|5249732551006666390";
 
     public static readonly Version tMLVersion;
     public static readonly Version stableVersion;

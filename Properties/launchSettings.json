@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "tModBuilder": {
+      "commandName": "Project",
+      "commandLineArgs": "\"C:\\Users\\ZMECH\\Documents\\My Games\\Terraria\\tModLoader\\ModSources\\Dota2ForTerraria\""
+    }
+  }
+}
